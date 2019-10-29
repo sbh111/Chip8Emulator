@@ -2,12 +2,8 @@
 Author: Saad Bhatti
  */
 
-import jdk.internal.cmm.SystemResourcePressureImpl;
-
 import java.io.*;
-import java.nio.Buffer;
 import java.nio.charset.Charset;
-import java.util.Scanner;
 import java.util.Stack;
 
 public class Chip8 {
