@@ -2,6 +2,8 @@
 Author: Saad Bhatti
  */
 
+import jdk.internal.cmm.SystemResourcePressureImpl;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Stack;
@@ -41,19 +43,24 @@ public class Chip8 {
     public void loadROM(String filename) throws IOException {
         //load ROM into memory starting from 0x200 to 0xfff
 
-        File file = new File(filename);
+        /*File file = new File(filename);
 
         InputStream in = new FileInputStream(file);
         Reader reader = new InputStreamReader(in, Charset.defaultCharset());
         Reader buffReader = new BufferedReader(reader);
         int r;
         while((r = buffReader.read()) != -1){
-            char ch = (char)r;
+            short ch = (short)r;
             System.out.println(ch);
-            //System.out.println(Integer.toHexString(r));
+        }*/
+
+        FileInputStream fin = new FileInputStream(filename);
+        DataInputStream din = new DataInputStream(fin);
+        while(din.available() > 0){
+            short s = din.readShort();
+            System.out.println(Integer.toHexString(s));
         }
-
-
+        din.close();
     }//end loadROM
 
     public void emulateCycle(){
