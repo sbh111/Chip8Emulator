@@ -2,8 +2,12 @@
 Author: Saad Bhatti
  */
 
+import jdk.internal.cmm.SystemResourcePressureImpl;
+
 import java.io.*;
+import java.nio.Buffer;
 import java.nio.charset.Charset;
+import java.util.Scanner;
 import java.util.Stack;
 
 public class Chip8 {
@@ -42,16 +46,19 @@ public class Chip8 {
         //load ROM into memory starting from 0x200 to 0xfff
 
         File file = new File(filename);
+
         InputStream in = new FileInputStream(file);
         Reader reader = new InputStreamReader(in, Charset.defaultCharset());
         Reader buffReader = new BufferedReader(reader);
         int r;
         while((r = buffReader.read()) != -1){
-            //char ch = (char)r;
-            //System.out.println(ch);
-            System.out.println(Integer.toHexString(r));
+            char ch = (char)r;
+            System.out.println(ch);
+            //System.out.println(Integer.toHexString(r));
         }
-    }
+
+
+    }//end loadROM
 
     public void emulateCycle(){
         //perform one cycle

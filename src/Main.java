@@ -9,7 +9,7 @@ public class Main {
 
         System.out.println("Chip-8 Emulator");
         Chip8 myChip8 = new Chip8();
-        String FILE_PATH = "res/maze.ch8";
+        String FILE_PATH = "res/maze.txt";
         myChip8.loadROM(FILE_PATH);
     }
 }
