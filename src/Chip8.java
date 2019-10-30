@@ -2,10 +2,7 @@
 Author: Saad Bhatti
  */
 
-import jdk.internal.cmm.SystemResourcePressureImpl;
-
 import java.io.*;
-import java.nio.charset.Charset;
 import java.util.Stack;
 
 public class Chip8 {
@@ -15,10 +12,10 @@ public class Chip8 {
     private Stack<Integer> stack;
     private short pc;
     private short I;
-    private char sp;
-    private char memory[];
-    private char registers[];
-    private char framebuffer[];
+    private byte sp;
+    private byte memory[];
+    private byte registers[];
+    private byte framebuffer[];
     private int soundTimer;
     private int delayTimer;
 
@@ -27,9 +24,9 @@ public class Chip8 {
     public Chip8(){
         //initialize variables
         stack = new Stack<>();
-        memory = new char[4096];
-        registers = new char[16];
-        framebuffer = new char[64 * 32];
+        memory = new byte[4096];
+        registers = new byte[16];
+        framebuffer = new byte[64 * 32];
         pc = 0x200;
         sp = 0;
         I = 0;
@@ -43,25 +40,32 @@ public class Chip8 {
     public void loadROM(String filename) throws IOException {
         //load ROM into memory starting from 0x200 to 0xfff
 
-        /*File file = new File(filename);
-
-        InputStream in = new FileInputStream(file);
-        Reader reader = new InputStreamReader(in, Charset.defaultCharset());
-        Reader buffReader = new BufferedReader(reader);
-        int r;
-        while((r = buffReader.read()) != -1){
-            short ch = (short)r;
-            System.out.println(ch);
-        }*/
-
         FileInputStream fin = new FileInputStream(filename);
         DataInputStream din = new DataInputStream(fin);
+        int i = 0;
         while(din.available() > 0){
             short s = din.readShort();
-            System.out.println(Integer.toHexString(s));
+
+
+            byte firstByte = (byte)(((s & 0xff00) >> 8));
+            byte secondByte = (byte)((s & 0x00ff));
+
+            memory[0x200 + i++] = firstByte;
+            memory[0x200 + i++] = secondByte;
         }
         din.close();
+
+
+        //see what's in memory
+        System.out.println("Memory:");
+        for(int j = 0; j < i; j++){
+            int memoryLoc = 0x200 + j;
+            String val = Integer.toHexString(memory[memoryLoc] & 0xff);
+            String text = "0x" + Integer.toHexString(memoryLoc) + ": 0x" + val;
+            System.out.println(text);
+        }
     }//end loadROM
+
 
     public void emulateCycle(){
         //perform one cycle
