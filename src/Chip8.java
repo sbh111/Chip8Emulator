@@ -77,14 +77,14 @@ public class Chip8 {
         din.close();
 
 
-        /*// TEST: see what's in memory
+        // TEST: see what's in memory
         System.out.println("Memory:");
         for(int j = 0; j < i; j++){
             int memoryLoc = 0x200 + j;
             String val = Integer.toHexString(memory[memoryLoc]);
             String text = "0x" + Integer.toHexString(memoryLoc) + ": 0x" + val;
             System.out.println(text);
-        }*/
+        }
 
     }// end loadROM
 
