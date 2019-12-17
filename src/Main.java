@@ -69,16 +69,16 @@ public class Main extends Application{
                 myChip8.emulateCycle(keys);
                 StringBuilder bldr = new StringBuilder();
 
-                bldr.append(String.format("OpCode:\t0x%08x\n", (int)myChip8.getOpCode()));
-                bldr.append(String.format("PC:\t0x%08x\n", (int)myChip8.getPc()));
-                bldr.append(String.format("I:\t0x%08x\n", (int)myChip8.getI()));
+                bldr.append(String.format("OpCode:\t0x%s\n", Integer.toHexString(0xffff & myChip8.getOpCode())));
+                bldr.append(String.format("PC:\t0x%s\n", Integer.toHexString(myChip8.getPc())));
+                bldr.append(String.format("I:\t0x%s\n", Integer.toHexString(myChip8.getI())));
 
                 for(int i = 0; i < 16; i++){
-                    bldr.append(String.format("V%d:\t0x%08x\n", i, (int)myChip8.getRegister(i)));
+                    bldr.append(String.format("V%d:\t0x%s\n", i, Integer.toHexString(myChip8.getRegister(i))));
                 }
 
-                bldr.append(String.format("SoundTimer:\t%d\n", (int)myChip8.getSoundTimer()));
                 bldr.append(String.format("DelayTimer:\t%d\n", (int)myChip8.getDelayTimer()));
+                bldr.append(String.format("SoundTimer:\t%d\n", (int)myChip8.getSoundTimer()));
                 String valuesTxt = bldr.toString();
 
 
