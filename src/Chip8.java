@@ -12,6 +12,9 @@ public class Chip8 {
     // FIXME: The stack should probably be like an array or something
     private Stack<Short> stack;
     private short pc;
+
+
+
     private short I;
     private char memory[];
     private char registers[];
@@ -19,9 +22,42 @@ public class Chip8 {
     private char soundTimer;
     private char delayTimer;
 
-    private final int DRAW_FLAG = 0x0001;       //tells emu to draw stuff in frame buffer.
-    private final int PRESS_KEY_FLAG = 0x0010;  //tells emu to wait for a key press.
+    private final int fontSet[] = {
+            0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+            0x20, 0x60, 0x20, 0x20, 0x70, // 1
+            0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+            0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+            0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+            0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+            0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+            0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+            0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+            0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+            0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+            0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+            0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+            0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+            0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+            0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+    };
+    public final int DRAW_FLAG = 0x0001;       //tells emu to draw stuff in frame buffer.
+    public final int PRESS_KEY_FLAG = 0x0010;  //tells emu to wait for a key press.
 
+
+    public void reset(){
+        stack.clear();
+        Arrays.fill(memory, (char)0x0);
+        Arrays.fill(registers, (char)0x0);
+        Arrays.fill(framebuffer, (char)0x0);
+        pc = 0x200;
+        I = 0;
+        soundTimer = 0;
+        delayTimer = 0;
+        int i = 0;
+        for (int f : fontSet) {
+            memory[i++] = (char) f;
+        }
+    }
 
     public Chip8() {
         // initialize variables
@@ -35,31 +71,25 @@ public class Chip8 {
         delayTimer = 0;
 
         // load fontset from 0x000 to 0x080 in memory
-        int fontSet[] = {
-                0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-                0x20, 0x60, 0x20, 0x20, 0x70, // 1
-                0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-                0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-                0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-                0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-                0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-                0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-                0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-                0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-                0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-                0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-                0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-                0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-                0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-                0xF0, 0x80, 0xF0, 0x80, 0x80  // F
-        };
         int i = 0;
         for (int f : fontSet) {
             memory[i++] = (char) f;
         }
     }
 
-    public void loadROM(String filename) throws IOException {
+    public char[] getFramebuffer(){
+        return framebuffer;
+    }
+    public short getPc() { return pc; }
+    public short getI() {
+        return I;
+    }
+    public char getRegister(int i){return registers[i];}
+    public char getSoundTimer(){return soundTimer;}
+    public char getDelayTimer(){return delayTimer;}
+    public short getOpCode(){return (short) (memory[pc] << 8 | memory[pc + 1]);}
+
+    public void loadROM(String filename, boolean memOut) throws IOException {
         // load ROM into memory starting from 0x200 to 0xfff
 
         // read the shorts from the chip8 file
@@ -79,15 +109,16 @@ public class Chip8 {
         din.close();
 
 
-        // TEST: see what's in memory
-        System.out.println("Memory:");
-        for(int j = 0; j < i; j++){
-            int memoryLoc = 0x200 + j;
-            String val = Integer.toHexString(memory[memoryLoc]);
-            String text = "0x" + Integer.toHexString(memoryLoc) + ": 0x" + val;
-            System.out.println(text);
+        //See what's in memory
+        if(memOut){
+            System.out.println("Memory:");
+            for(int j = 0; j < i; j++){
+                int memoryLoc = 0x200 + j;
+                String val = Integer.toHexString(memory[memoryLoc]);
+                String text = "0x" + Integer.toHexString(memoryLoc) + ": 0x" + val;
+                System.out.println(text);
+            }
         }
-
     }// end loadROM
 
 
@@ -98,7 +129,6 @@ public class Chip8 {
         int flag = 0x0000;
         short opcode = (short) (memory[pc] << 8 | memory[pc + 1]);
         switch (opcode & (short) 0xf000) {
-
 
             case (short) 0x0000:
                 if (opcode == (short) 0x00e0) {
@@ -113,6 +143,7 @@ public class Chip8 {
                     // The interpreter sets the program counter to the address at the top of the stack,
                     // then subtracts 1 from the stack pointer.
                     pc = stack.pop();
+                    //pc += 2 automatically
                 }
                 break;
 
@@ -145,6 +176,8 @@ public class Chip8 {
                 // Skip next instruction if Vx = kk.
                 // The interpreter compares register Vx to kk, and if they are equal,
                 // increments the program counter by 2 instructions == 4.
+
+                incrPC = false;
                 if(registers[(opcode & 0x0f00) >> 8] == (opcode & (short)0x00ff)){
                     pc += 4;
                 }
@@ -160,6 +193,8 @@ public class Chip8 {
                 // Skip next instruction if Vx != kk.
                 // The interpreter compares register Vx to kk, and if they are not equal,
                 // increments the program counter by 2 instructions == 4.
+
+                incrPC = false;
                 if(registers[(opcode & 0x0f00) >> 8] != (opcode & (short)0x00ff)){
                     pc += 4;
                 }
@@ -174,6 +209,8 @@ public class Chip8 {
                 // Skip next instruction if Vx = Vy.
                 // The interpreter compares register Vx to register Vy, and if they are equal,
                 // increments the program counter by 2 full instructions, == 4.
+
+                incrPC = false;
                 if(registers[(opcode & 0x0f00) >> 8] == registers[(opcode & 0x00f0) >> 4]){
                     pc += 4;
                 }
@@ -297,6 +334,7 @@ public class Chip8 {
                 // 9xy0 - SNE Vx, Vy
                 // Skip next instruction if Vx != Vy. The values of Vx and Vy are compared, and if they are not equal, the
                 // program counter is increased by 2.
+
                 incrPC = false;
                 if (registers[(opcode & 0x0F00) >> 8] != registers[(opcode & 0x00F0) >> 4])
                     pc += 4;
@@ -315,6 +353,7 @@ public class Chip8 {
             case (short) 0xb000:
                 // Bnnn - JP V0, addr
                 // Jump to location nnn + V0. The program counter is set to nnn plus the value of V0.
+
                 incrPC = false;
                 pc = (short)((opcode & 0x0FFF) + registers[0]);
                 break;
@@ -324,6 +363,7 @@ public class Chip8 {
                 // Cxkk - RND Vx, byte
                 // Set Vx = random byte AND kk. The interpreter generates a random number from 0 to 255, which is then
                 // ANDed with the value kk. The results are stored in Vx. See instruction 8xy2 for more information on AND.
+
                 int randInt = (int )(Math.random() * 50 + 1);
                 registers[(opcode & 0x0F00) >> 8] = (char)((randInt % (0xFF + 1)) & (opcode & 0x00FF));
                 break;
@@ -336,6 +376,7 @@ public class Chip8 {
                 // at coordinates (Vx, Vy). Sprites are XOR’d onto the existing screen. If this causes any pixels to be erased,
                 // VF is set to 1, otherwise it is set to 0. If the sprite is positioned so part of it is outside the coordinates of
                 // the display, it wraps around to the opposite side of the screen.
+
                 flag |= DRAW_FLAG;
                 short x = (short)registers[(opcode & 0x0F00) >> 8];
                 short y = (short)registers[(opcode & 0x00F0) >> 4];
@@ -366,6 +407,7 @@ public class Chip8 {
                     // Ex9E - SKP Vx
                     // Skip next instruction if key with the value of Vx is pressed. Checks the keyboard, and if the key corresponding
                     // to the value of Vx is currently in the down position, PC is increased by 2
+
                     incrPC = false;
                     if (keys[registers[(opcode & 0x0F00) >> 8]] != false)
                         pc +=  4;
@@ -376,6 +418,7 @@ public class Chip8 {
                     // ExA1 - SKNP Vx
                     // Skip next instruction if key with the value of Vx is not pressed. Checks the keyboard, and if the key
                     // corresponding to the value of Vx is currently in the up position, PC is increased by 2.
+
                     incrPC = false;
                     if (keys[registers[(opcode & 0x0F00) >> 8]] == false)
                         pc +=  4;
@@ -481,7 +524,8 @@ public class Chip8 {
                 break;
 
             default:
-                System.out.println("Error, opcode: " + opcode + "not recognized");
+                System.out.println("Error, opcode " + opcode + " not recognized");
+                incrPC = false;
                 break;
         }// end switch
 
@@ -491,12 +535,13 @@ public class Chip8 {
         return flag;
     }// end execOp
 
-    public void emulateCycle() {
-        // perform one cycle
-        //get keys presses
-        //do one op
-        //update timers
-        //
+    public int emulateCycle(boolean keys[]) {
+        int out = execOp(keys);
+        if(out != PRESS_KEY_FLAG){
+            delayTimer = (char)(delayTimer > 0 ? delayTimer - 1 : delayTimer);
+            soundTimer = (char)(soundTimer > 0 ? soundTimer - 1 : soundTimer);
+        }
+        return out;
     }
 
 }
