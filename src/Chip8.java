@@ -8,13 +8,8 @@ import java.util.Stack;
 
 public class Chip8 {
 
-
-    // FIXME: The stack should probably be like an array or something
     private Stack<Short> stack;
     private short pc;
-
-
-
     private short I;
     private char memory[];
     private char registers[];

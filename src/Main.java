@@ -3,6 +3,8 @@ Author = Saad Bhatti
  */
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -57,13 +59,43 @@ public class Main extends Application{
         }
     }
 
+    public void loadMap(HashMap<String, Integer> keyMap){
+        /*
+         * Keypad is set up like so:
+         * "1", "2", "3", "4"
+         * "Q", "W", "E", "R"
+         * "A", "S", "D", "F"
+         * "Z", "X", "C", "V"
+         */
+        keyMap.put("DIGIT1", 1);
+        keyMap.put("DIGIT2", 2);
+        keyMap.put("DIGIT3", 3);
+        keyMap.put("DIGIT4", 12);
+        keyMap.put("Q", 4);
+        keyMap.put("W", 5);
+        keyMap.put("E", 6);
+        keyMap.put("R", 13);
+        keyMap.put("A", 7);
+        keyMap.put("S", 8);
+        keyMap.put("D", 9);
+        keyMap.put("F", 14);
+        keyMap.put("Z", 10);
+        keyMap.put("X", 0);
+        keyMap.put("C", 11);
+        keyMap.put("V", 15);
+    }
     public void start(Stage primaryStage) throws IOException {
         //main code here
         Chip8 myChip8 = new Chip8();
-        myChip8.loadROM("res/sierpinski.ch8", true);
+        myChip8.loadROM("res/maze.ch8", true);
+        HashMap <String, Integer> keyMap = new HashMap<>();
+        loadMap(keyMap);
+        boolean keys[] = new boolean[16];
+        final long startNanoTime = System.nanoTime();
+
+
 
         primaryStage.setTitle("Chip-8 Emulator");
-
         Group root = new Group();
         Scene scene = new Scene(root, WINDOW_W, WINDOW_H, Color.DARKGRAY);
         primaryStage.setScene(scene);
@@ -75,20 +107,41 @@ public class Main extends Application{
         root.getChildren().add(pixels);
         root.getChildren().add(values);
 
-        boolean keys[] = new boolean[16];
+
+        ArrayList<String> input = new ArrayList<>();
+        scene.setOnKeyPressed(
+                e -> {
+                    String code = e.getCode().toString();
+                    if ( !input.contains(code) )
+                        input.add( code );
+                    if(keyMap.containsKey(code)){
+                        keys[keyMap.get(code)] = true;
+                    }
+                });
+        scene.setOnKeyReleased(
+                e -> {
+                    String code = e.getCode().toString();
+                    input.remove( code );
+                    if(keyMap.containsKey(code)){
+                        keys[keyMap.get(code)] = false;
+                    }
+                });
 
 
-        //Now Graphics
-        GraphicsContext pixelsGC = pixels.getGraphicsContext2D();
-        GraphicsContext valuesGC = values.getGraphicsContext2D();
 
-        final long startNanoTime = System.nanoTime();
-        new AnimationTimer() {
+        AnimationTimer ani = new AnimationTimer() {
+            GraphicsContext pixelsGC = pixels.getGraphicsContext2D();
+            GraphicsContext valuesGC = values.getGraphicsContext2D();
+
             public void handle(long currentNanoTime) {
+
                 double elsapsedTime = (currentNanoTime - startNanoTime) / 1000000000.0;
 
-                //emulate 1 cycle
-                myChip8.emulateCycle(keys);
+                if(!input.contains("SPACE")){
+                    //emulate 1 cycle
+                    myChip8.emulateCycle(keys);
+                }
+
 
                 //build the emulator values string
                 StringBuilder bldr = new StringBuilder();
@@ -124,7 +177,9 @@ public class Main extends Application{
                 pixelsGC.setLineWidth(5);
                 pixelsGC.strokeRect(pixelX, pixelY, pixelW, pixelH);
             }
-        }.start();
+        };
+
+        ani.start();
         primaryStage.show();
     }//end start class
 }//end Main class
