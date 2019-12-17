@@ -60,7 +60,7 @@ public class Main extends Application{
     public void start(Stage primaryStage) throws IOException {
         //main code here
         Chip8 myChip8 = new Chip8();
-        myChip8.loadROM("res/maze.ch8", true);
+        myChip8.loadROM("res/sierpinski.ch8", true);
 
         primaryStage.setTitle("Chip-8 Emulator");
 

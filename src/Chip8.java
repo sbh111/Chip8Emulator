@@ -80,14 +80,24 @@ public class Chip8 {
     public char[] getFramebuffer(){
         return framebuffer;
     }
-    public short getPc() { return pc; }
+    public short getPc() {
+        return pc;
+    }
     public short getI() {
         return I;
     }
-    public char getRegister(int i){return registers[i];}
-    public char getSoundTimer(){return soundTimer;}
-    public char getDelayTimer(){return delayTimer;}
-    public short getOpCode(){return (short) (memory[pc] << 8 | memory[pc + 1]);}
+    public char getRegister(int i){
+        return registers[i];
+    }
+    public char getSoundTimer(){
+        return soundTimer;
+    }
+    public char getDelayTimer(){
+        return delayTimer;
+    }
+    public short getOpCode(){
+        return (short) (memory[pc] << 8 | memory[pc + 1]);
+    }
 
     public void loadROM(String filename, boolean memOut) throws IOException {
         // load ROM into memory starting from 0x200 to 0xfff
@@ -543,5 +553,4 @@ public class Chip8 {
         }
         return out;
     }
-
 }
