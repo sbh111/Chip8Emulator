@@ -2,6 +2,7 @@
 Author = Saad Bhatti
  */
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,8 +13,14 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 
@@ -21,7 +28,7 @@ public class Main extends Application{
 
     int WINDOW_W = 800;
     int WINDOW_H = 400;
-    float offset = WINDOW_W/30; //offset from top and side edges
+    float offset = WINDOW_W/25; //offset from top and side edges
 
     float blockW = WINDOW_W/100;
     float blockH = WINDOW_H/40;
@@ -84,15 +91,13 @@ public class Main extends Application{
         keyMap.put("C", 11);
         keyMap.put("V", 15);
     }
-    public void start(Stage primaryStage) throws IOException {
+    public void start(Stage primaryStage) {
         //main code here
+
         Chip8 myChip8 = new Chip8();
-        myChip8.loadROM("res/maze.ch8", true);
         HashMap <String, Integer> keyMap = new HashMap<>();
         loadMap(keyMap);
         boolean keys[] = new boolean[16];
-        final long startNanoTime = System.nanoTime();
-
 
 
         primaryStage.setTitle("Chip-8 Emulator");
@@ -106,6 +111,50 @@ public class Main extends Application{
 
         root.getChildren().add(pixels);
         root.getChildren().add(values);
+
+
+        FileChooser fc = new FileChooser();
+        Label label = new Label("no files selected");
+        Button button = new Button("Select ROM");
+        ToggleButton pauseButton = new ToggleButton("Pause ");
+
+        pauseButton.setOnAction(
+                e ->{
+                    if(pauseButton.isSelected()){
+                        pauseButton.setText("Paused");
+                        myChip8.paused = true;
+                    }
+                    else{
+                        pauseButton.setText("Pause ");
+                        myChip8.paused = false;
+                    }
+                }
+        );
+
+        button.setOnAction(
+                e ->{
+                    // get the file selected
+                    File file = fc.showOpenDialog(primaryStage);
+
+                    if (file != null) {
+
+                        label.setText(file.getName()
+                                + " selected");
+
+
+                        myChip8.reset();
+                        try {
+                            myChip8.loadROM(file.getAbsolutePath(), true);
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+        );
+        BorderPane bp = new BorderPane();
+        HBox hbox = new HBox(20, button, pauseButton, label);
+        bp.setCenter(hbox);
+        root.getChildren().add(bp);
 
 
         ArrayList<String> input = new ArrayList<>();
@@ -128,16 +177,13 @@ public class Main extends Application{
                 });
 
 
-
         AnimationTimer ani = new AnimationTimer() {
             GraphicsContext pixelsGC = pixels.getGraphicsContext2D();
             GraphicsContext valuesGC = values.getGraphicsContext2D();
 
             public void handle(long currentNanoTime) {
 
-                double elsapsedTime = (currentNanoTime - startNanoTime) / 1000000000.0;
-
-                if(!input.contains("SPACE")){
+                if(!myChip8.paused){
                     //emulate 1 cycle
                     myChip8.emulateCycle(keys);
                 }

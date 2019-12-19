@@ -16,6 +16,7 @@ public class Chip8 {
     private char framebuffer[];
     private char soundTimer;
     private char delayTimer;
+    public boolean paused;
 
     private final int fontSet[] = {
             0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -52,6 +53,7 @@ public class Chip8 {
         for (int f : fontSet) {
             memory[i++] = (char) f;
         }
+        paused = false;
     }
 
     public Chip8() {
@@ -70,6 +72,7 @@ public class Chip8 {
         for (int f : fontSet) {
             memory[i++] = (char) f;
         }
+        paused = false;
     }
 
     public char[] getFramebuffer(){
@@ -417,7 +420,7 @@ public class Chip8 {
                     // to the value of Vx is currently in the down position, PC is increased by 2
 
                     incrPC = false;
-                    if (keys[registers[(opcode & 0x0F00) >> 8]] != false)
+                    if (keys[registers[(opcode & 0x0F00) >> 8]])
                         pc +=  4;
                     else
                         pc += 2;
@@ -428,7 +431,7 @@ public class Chip8 {
                     // corresponding to the value of Vx is currently in the up position, PC is increased by 2.
 
                     incrPC = false;
-                    if (keys[registers[(opcode & 0x0F00) >> 8]] == false)
+                    if (!keys[registers[(opcode & 0x0F00) >> 8]])
                         pc +=  4;
                     else
                         pc += 2;
@@ -451,7 +454,7 @@ public class Chip8 {
                         // value of that key is stored in Vx.
                         int key = -1;
                         for(int i = 0; i < 16; i++){
-                            if(keys[i] == true){
+                            if(keys[i]){
                                 key = i;
                                 registers[(opcode & 0x0F00) >> 8] = (char)key;
                                 break;
@@ -543,12 +546,11 @@ public class Chip8 {
         return flag;
     }// end execOp
 
-    public int emulateCycle(boolean keys[]) {
+    void emulateCycle(boolean[] keys) {
         int out = execOp(keys);
         if(out != PRESS_KEY_FLAG){
             delayTimer = (char)(delayTimer > 0 ? delayTimer - 1 : delayTimer);
             soundTimer = (char)(soundTimer > 0 ? soundTimer - 1 : soundTimer);
         }
-        return out;
     }
 }
