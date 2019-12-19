@@ -149,6 +149,9 @@ public class Chip8 {
                     // then subtracts 1 from the stack pointer.
                     pc = stack.pop();
                     //pc += 2 automatically
+                } else if(opcode == (short) 0x0){
+                    //nop
+                    incrPC = false;
                 }
                 break;
 
